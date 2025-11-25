@@ -19,70 +19,36 @@ Tailscale provides secure, zero-configuration networking with automatic HTTPS an
 2. Your application running via Docker
 3. (Optional) Custom domain with DNS access
 
-## Quick Setup
+## Quick Setup (Docker-based)
 
-### Step 1: Install Tailscale
+### Step 1: Generate Auth Key
+1. Go to [Tailscale Admin Console > Settings > Keys](https://login.tailscale.com/admin/settings/keys)
+2. Generate a new **Auth Key**
+3. Select "Reusable" and add tags `tag:frontend`, `tag:backend`
+4. Copy the key (starts with `tskey-auth-...`)
 
-**Windows:**
-```powershell
-# Download and install from https://tailscale.com/download/windows
-# Or use winget
-winget install tailscale.tailscale
-```
+### Step 2: Configure Environment
+1. Open `.env` file
+2. Add your auth key:
+   ```bash
+   TS_AUTHKEY=tskey-auth-k123456CNTRL-abcdef1234567890abcdef
+   ```
 
-**Linux:**
+### Step 3: Deploy
+Run the automated deployment script:
 ```bash
-curl -fsSL https://tailscale.com/install.sh | sh
+.\scripts\deploy-complete.bat
 ```
+1. Answer **y** when asked to set up Tailscale.
+2. The script will automatically:
+   - Start the Tailscale Docker container
+   - Authenticate using your key
+   - Expose services via Tailscale Funnel
+   - Update `.env` with your public URL
+   - Restart services to apply changes
 
-**macOS:**
-```bash
-brew install tailscale
-```
-
-### Step 2: Authenticate
-
-```bash
-# Start Tailscale and authenticate
-tailscale up
-
-# Enable HTTPS (MagicDNS + HTTPS certificates)
-tailscale up --accept-dns
-```
-
-This will open a browser for authentication.
-
-### Step 3: Enable HTTPS in Tailscale Admin
-
-1. Go to https://login.tailscale.com/admin/dns
-2. Enable **MagicDNS**
-3. Enable **HTTPS Certificates**
-
-### Step 4: Serve Your Application
-
-**Option A: Using Tailscale Serve (Recommended)**
-
-```bash
-# Serve frontend on HTTPS
-tailscale serve https / http://localhost:3000
-
-# Serve backend API on HTTPS
-tailscale serve https /api http://localhost:8787
-```
-
-Your app will be available at:
-- `https://your-machine-name.tail-scale-name.ts.net`
-
-**Option B: Using Tailscale Funnel (Public Access)**
-
-```bash
-# Make it publicly accessible (no Tailscale required for visitors)
-tailscale funnel 443 on
-tailscale serve https / http://localhost:3000
-tailscale serve https /api http://localhost:8787
-```
-
-Your app will be publicly accessible at:
+### Step 4: Access Application
+Your application will be available at the URL shown in the console (and saved in `.env`):
 - `https://your-machine-name.tail-scale-name.ts.net`
 
 ## Custom Domain Setup

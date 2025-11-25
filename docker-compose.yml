@@ -1,12 +1,12 @@
 services:
   postgres:
     image: postgres:14-alpine
-    container_name: cinemax-postgres
+    container_name: v2capsule-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: change-this-secure-password
-      POSTGRES_DB: cinemax_storage
+      POSTGRES_DB: v2capsule_storage
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -17,17 +17,17 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - cinemax-network
+      - v2capsule-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: cinemax-backend
+    container_name: v2capsule-backend
     restart: unless-stopped
     environment:
       PORT: ${BACKEND_PORT:-8787}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://user:change-this-secure-password@postgres:5432/cinemax_storage}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://user:change-this-secure-password@postgres:5432/v2capsule_storage}
       STORAGE_ROOT: /app/storage_data
       JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
       ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
@@ -42,7 +42,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - cinemax-network
+      - v2capsule-network
 
   frontend:
     build:
@@ -50,7 +50,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8787}
-    container_name: cinemax-frontend
+    container_name: v2capsule-frontend
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8787}
@@ -59,12 +59,38 @@ services:
     depends_on:
       - backend
     networks:
-      - cinemax-network
+      - v2capsule-network
+
+  tailscale:
+    image: tailscale/tailscale:stable
+    container_name: v2capsule-tailscale
+    restart: unless-stopped
+    network_mode: "service:backend"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - tailscale_data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_HOSTNAME=v2capsule
+      - TS_STATE_DIR=/var/lib/tailscale
+    command: >-
+      sh -c "tailscaled &
+             PID=$!
+             sleep 5
+             tailscale up --authkey=$TS_AUTHKEY --accept-dns
+             tailscale serve --bg http://localhost:3000
+             tailscale serve --bg --set-path /api http://localhost:8787
+             wait $PID"
 
 volumes:
   postgres_data:
     driver: local
+  tailscale_data:
+    driver: local
 
 networks:
-  cinemax-network:
+  v2capsule-network:
     driver: bridge

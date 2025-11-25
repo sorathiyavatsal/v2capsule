@@ -28,9 +28,13 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm install --production --prefer-offline --no-audit
 
+# Install tsx globally for migration script
+RUN npm install -g tsx
+
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/src ./src
 
 # Create storage directory
 RUN mkdir -p /app/storage_data
@@ -39,4 +43,4 @@ RUN mkdir -p /app/storage_data
 EXPOSE 8787
 
 # Run migrations and start server
-CMD ["sh", "-c", "npm run db:migrate && node dist/index.js"]
+CMD ["sh", "-c", "npm run db:migrate && tsx src/index.ts"]

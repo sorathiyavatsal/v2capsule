@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableDelayedExpansion
 REM Tailscale deployment script for Windows
 
 echo.
@@ -40,20 +41,17 @@ echo Select deployment type:
 echo 1) Private (Tailscale network only)
 echo 2) Public (Funnel - accessible to anyone)
 echo.
-set /p choice="Enter choice [1-2]: "
+set /p ts_choice="Enter choice 1 or 2: "
 
-if "%choice%"=="1" (
+if /i "!ts_choice!"=="1" (
     echo.
     echo Setting up private access...
-    tailscale serve https / http://localhost:3000
-    tailscale serve https /api http://localhost:8787
-    echo Private access configured!
-) else if "%choice%"=="2" (
+    echo Private Tailscale access configured!
+) else if /i "!ts_choice!"=="2" (
     echo.
     echo Setting up public access...
-    tailscale funnel 443 on
-    tailscale serve https / http://localhost:3000
-    tailscale serve https /api http://localhost:8787
+    tailscale serve --bg http://localhost:3000
+    tailscale serve --bg --set-path /api http://localhost:8787
     echo Public access configured!
 ) else (
     echo Invalid choice
