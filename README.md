@@ -7,11 +7,11 @@ A production-ready S3-compatible object storage system with advanced features in
 ### One-Click Deployment
 ```bash
 # Windows
-.\deploy-complete.bat
+.\scripts\deploy-complete.bat
 
 # Linux/Mac
-chmod +x deploy-complete.sh
-./deploy-complete.sh
+chmod +x scripts/deploy-complete.sh
+./scripts/deploy-complete.sh
 ```
 
 ### Access
@@ -94,10 +94,10 @@ V2 Capsule/
 
 ## 📖 Documentation
 
-- [Quick Start Guide](QUICKSTART.md) - Get started in 5 minutes
-- [Docker Deployment](DOCKER_DEPLOYMENT.md) - Complete Docker guide
-- [Tailscale Setup](TAILSCALE_SETUP.md) - Remote access configuration
-- [Docker Optimization](DOCKER_OPTIMIZATION.md) - Build performance tips
+- [Quick Start Guide](docs/QUICKSTART.md) - Get started in 5 minutes
+- [Docker Deployment](docs/DOCKER_DEPLOYMENT.md) - Complete Docker guide
+- [Tailscale Setup](docs/TAILSCALE_SETUP.md) - Remote access configuration
+- [Docker Optimization](docs/DOCKER_OPTIMIZATION.md) - Build performance tips
 - [API Documentation](docs/api_documentation.md) - API reference
 - [Testing Plan](docs/testing_plan.md) - Feature testing guide
 - [Walkthrough](docs/walkthrough.md) - Implementation details
@@ -155,10 +155,11 @@ docker-compose up -d --build
 
 ```bash
 # Windows
-.\setup-tailscale.bat
+.\scripts\setup-tailscale.bat
 
 # Linux/Mac
-./setup-tailscale.sh
+chmod +x scripts/setup-tailscale.sh
+./scripts/setup-tailscale.sh
 ```
 
 Access your app from anywhere with automatic HTTPS!
@@ -167,11 +168,11 @@ Access your app from anywhere with automatic HTTPS!
 
 ```bash
 # Windows
-.\cleanup.bat
+.\scripts\cleanup.bat
 
 # Linux/Mac
-chmod +x cleanup.sh
-./cleanup.sh
+chmod +x scripts/cleanup.sh
+./scripts/cleanup.sh
 ```
 
 Removes build artifacts, nested git repos, and prepares for monorepo.
@@ -222,4 +223,4 @@ MIT License - see LICENSE file for details
 
 **Made with ❤️ for CineMax Plaza**
 
-🚀 **Ready to deploy? Run `deploy-complete.bat` and get started!**
+🚀 **Ready to deploy? Run `scripts\deploy-complete.bat` and get started!**
