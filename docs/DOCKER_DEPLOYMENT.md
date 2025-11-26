@@ -14,8 +14,8 @@ This guide explains how to deploy the entire CineMax S3 Storage system using Doc
 ### 1. Clone and Navigate
 ```bash
 ```bash
-git clone https://gitlab.com/username/cinemax-s3-storage.git
-cd cinemax-s3-storage
+git clone https://gitlab.com/movieworld/v2capsule.git
+cd v2capsule
 ```
 ```
 

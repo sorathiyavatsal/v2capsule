@@ -33,6 +33,7 @@ services:
       ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       NODE_ENV: ${NODE_ENV:-production}
+      TS_AUTHKEY: ${TS_AUTHKEY}
     networks:
       - v2capsule-network
     cap_add:
@@ -42,7 +43,11 @@ services:
       - ./storage_data:/app/storage_data
       - ./backend/drizzle:/app/drizzle
       - ts_backend_data:/var/lib/tailscale
+      - shared_data:/shared
       - /dev/net/tun:/dev/net/tun
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -54,6 +59,7 @@ services:
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8787}
+      TS_AUTHKEY: ${TS_AUTHKEY}
     networks:
       - v2capsule-network
     cap_add:
@@ -61,7 +67,10 @@ services:
       - NET_RAW
     volumes:
       - ts_frontend_data:/var/lib/tailscale
+      - shared_data:/shared
       - /dev/net/tun:/dev/net/tun
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
@@ -69,6 +78,8 @@ volumes:
   ts_frontend_data:
     driver: local
   ts_backend_data:
+    driver: local
+  shared_data:
     driver: local
 
 networks:

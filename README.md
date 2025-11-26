@@ -6,26 +6,31 @@ A production-ready S3-compatible object storage system with advanced features in
 
 ### 1. Get the Code
 ```bash
-git clone https://gitlab.com/username/cinemax-s3-storage.git
-cd cinemax-s3-storage
+git clone https://gitlab.com/movieworld/v2capsule.git
+cd v2capsule
 ```
 
 ### 2. Configure Environment
 ```bash
-copy .env.example .env
-# Edit .env with your secrets
+cp .env.example .env
+# Edit .env and set:
+# - TS_AUTHKEY (get from https://login.tailscale.com/admin/settings/keys)
+# - JWT_SECRET (random string)
+# - ENCRYPTION_MASTER_KEY (64-char hex string)
 ```
 
 ### 3. Deploy
 ```bash
-# Windows
-.\scripts\deploy-complete.bat
+docker-compose up -d
 ```
 
-### Option 2: Use Pre-Built Images (Faster)
+### 4. View Your Public URLs
 ```bash
-# Windows
-docker-compose -f docker-compose.prod.yml up -d
+# Backend URL
+docker-compose logs backend | grep "Backend URL"
+
+# Frontend URL  
+docker-compose logs frontend | grep "Frontend URL"
 ```
 
 ### Access
