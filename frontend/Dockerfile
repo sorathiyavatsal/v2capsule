@@ -32,6 +32,13 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm install --production --prefer-offline --no-audit
 
+# Install Tailscale dependencies
+RUN apk add --no-cache ca-certificates iptables
+
+# Copy Tailscale binaries from official image
+COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscaled /usr/sbin/tailscaled
+COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscale /usr/bin/tailscale
+
 # Copy built files from builder
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
@@ -41,4 +48,9 @@ COPY --from=builder /app/next.config.ts ./
 EXPOSE 3000
 
 # Start Next.js
-CMD ["npm", "start"]
+# Copy start script
+COPY start.sh .
+RUN chmod +x start.sh
+
+# Start application with Tailscale
+CMD ["./start.sh"]

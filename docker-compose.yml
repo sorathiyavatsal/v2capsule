@@ -33,16 +33,16 @@ services:
       ENCRYPTION_MASTER_KEY: ${ENCRYPTION_MASTER_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - v2capsule-network
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     volumes:
       - ./storage_data:/app/storage_data
       - ./backend/drizzle:/app/drizzle
-    ports:
-      - "${BACKEND_PORT:-8787}:8787"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - v2capsule-network
+      - ts_backend_data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
 
   frontend:
     build:
@@ -54,41 +54,21 @@ services:
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8787}
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    depends_on:
-      - backend
     networks:
       - v2capsule-network
-
-  tailscale:
-    image: tailscale/tailscale:stable
-    container_name: v2capsule-tailscale
-    restart: unless-stopped
-    network_mode: "service:backend"
     cap_add:
       - NET_ADMIN
-      - SYS_MODULE
+      - NET_RAW
     volumes:
-      - tailscale_data:/var/lib/tailscale
+      - ts_frontend_data:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
-    environment:
-      - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_HOSTNAME=v2capsule
-      - TS_STATE_DIR=/var/lib/tailscale
-    command: >-
-      sh -c "tailscaled &
-             PID=$!
-             sleep 5
-             tailscale up --authkey=$TS_AUTHKEY --accept-dns
-             tailscale serve --bg http://localhost:3000
-             tailscale serve --bg --set-path /api http://localhost:8787
-             wait $PID"
 
 volumes:
   postgres_data:
     driver: local
-  tailscale_data:
+  ts_frontend_data:
+    driver: local
+  ts_backend_data:
     driver: local
 
 networks:

@@ -28,6 +28,13 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm install --production --prefer-offline --no-audit
 
+# Install Tailscale dependencies
+RUN apk add --no-cache ca-certificates iptables
+
+# Copy Tailscale binaries from official image
+COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscaled /usr/sbin/tailscaled
+COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscale /usr/bin/tailscale
+
 # Install tsx globally for migration script
 RUN npm install -g tsx
 
@@ -43,4 +50,9 @@ RUN mkdir -p /app/storage_data
 EXPOSE 8787
 
 # Run migrations and start server
-CMD ["sh", "-c", "npm run db:migrate && tsx src/index.ts"]
+# Copy start script
+COPY start.sh .
+RUN chmod +x start.sh
+
+# Run migrations and start server with Tailscale
+CMD ["./start.sh"]

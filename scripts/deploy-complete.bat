@@ -1,117 +1,89 @@
 @echo off
-REM ========================================
-REM CineMax S3 Storage - Complete Deployment
-REM One-Click Setup Script
-REM ========================================
-
-echo.
 echo ========================================
 echo CineMax S3 Storage - Complete Setup
 echo ========================================
-echo.
 
-REM Step 1: Check prerequisites
 echo [1/5] Checking prerequisites...
-echo.
-
-REM Check Docker
 where docker >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Docker is not installed!
-    echo Please install Docker Desktop from: https://www.docker.com/products/docker-desktop
+if %errorlevel% neq 0 (
+    echo Error: Docker is not installed or not in PATH.
     pause
     exit /b 1
 )
 
-REM Check Docker Compose
-where docker-compose >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Docker Compose is not installed!
-    echo Please install Docker Desktop which includes Docker Compose
-    pause
-    exit /b 1
-)
-
-echo Docker: OK
-echo Docker Compose: OK
-echo.
-
-REM Step 2: Setup environment
 echo [2/5] Setting up environment...
-echo.
-
 if not exist .env (
-    echo Creating .env file from template...
-    copy .env.example .env
-    echo.
-    echo IMPORTANT: Please update these values in .env:
-    echo   - DATABASE_URL (change password)
-    echo   - JWT_SECRET (generate random string)
-    echo   - ENCRYPTION_MASTER_KEY (64-char hex string)
-    echo.
-    set /p continue="Press Enter after updating .env to continue (or Ctrl+C to exit)..."
-)
-
-echo Environment: OK
-echo.
-
-REM Step 3: Deploy with Docker
-echo [3/5] Deploying application with Docker...
-echo.
-
-echo Building and starting services...
-docker-compose up -d --build
-
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Docker deployment failed!
-    echo Check the logs with: docker-compose logs
+    echo Error: .env file not found. Please create one from .env.example
     pause
     exit /b 1
 )
 
-echo.
-echo Waiting for services to be healthy...
-timeout /t 15 /nobreak > nul
-
-echo.
-echo Service Status:
-docker-compose ps
+REM Check for Auth Key
+if "%TS_AUTHKEY%"=="" (
+    set /p TS_AUTHKEY="Enter your Tailscale Auth Key: "
+)
+set TS_AUTHKEY=%TS_AUTHKEY%
 
 echo.
 echo ========================================
-echo.
-echo Your application is now running:
-echo.
-echo Local Access:
-echo   Frontend: http://localhost:3000
-echo   Backend:  http://localhost:8787
-echo.
-
-set /p setup_tailscale="Do you want to configure Tailscale (Docker) for remote access? (y/n): "
-if /i "%setup_tailscale%"=="y" (
-    echo Configuring Tailscale...
-    call scripts\set-tailscale-env.bat
-    echo Restarting services to apply new env variables...
-    docker-compose restart
-) else (
-    echo Skipping Tailscale configuration.
-)
-
-echo Documentation:
-echo   Docker:           DOCKER_DEPLOYMENT.md
-echo   Tailscale:        TAILSCALE_SETUP.md
-echo   API Docs:         docs/api_documentation.md
-echo.
+echo   Phase 1: Backend Deployment
 echo ========================================
 echo.
-
-REM Open browser to application
-set /p open_browser="Open application in browser? (y/n): "
-if /i "%open_browser%"=="y" (
-    start http://localhost:3000
-)
+echo Starting Backend and Database...
+docker-compose up -d backend postgres
 
 echo.
-echo Setup complete! Enjoy your S3 storage system!
+echo Configuring Backend Funnel...
+call .\scripts\setup-tailscale-funnel.bat backend nopause
+
+echo.
+echo ========================================
+echo   ACTION REQUIRED
+echo ========================================
+echo.
+echo Please copy the Backend URL displayed above (e.g., https://v2capsule-backend.tailxxxxx.ts.net)
+set /p BACKEND_URL="Paste Backend URL here: "
+
+echo Updating .env with NEXT_PUBLIC_API_URL...
+powershell -Command "(Get-Content .env) -replace 'NEXT_PUBLIC_API_URL=.*', 'NEXT_PUBLIC_API_URL=%BACKEND_URL%' | Set-Content .env"
+
+echo.
+echo ========================================
+echo   Phase 2: Frontend Deployment
+echo ========================================
+echo.
+echo Building and Starting Frontend (with new API URL)...
+docker-compose up -d --build frontend
+
+echo.
+echo Configuring Frontend Funnel...
+call .\scripts\setup-tailscale-funnel.bat frontend nopause
+
+echo.
+echo ========================================
+echo   ACTION REQUIRED
+echo ========================================
+echo.
+echo Please copy the Frontend URL displayed above (e.g., https://v2capsule-frontend.tailxxxxx.ts.net)
+set /p FRONTEND_URL="Paste Frontend URL here: "
+
+echo Updating .env with CORS_ORIGIN...
+powershell -Command "(Get-Content .env) -replace 'CORS_ORIGIN=.*', 'CORS_ORIGIN=%FRONTEND_URL%' | Set-Content .env"
+
+echo.
+echo ========================================
+echo   Phase 3: Finalize
+echo ========================================
+echo.
+echo Restarting Backend to apply CORS settings...
+docker-compose restart backend
+
+echo.
+echo ========================================
+echo   Deployment Complete!
+echo ========================================
+echo.
+echo Frontend: %FRONTEND_URL%
+echo Backend:  %BACKEND_URL%
 echo.
 pause
