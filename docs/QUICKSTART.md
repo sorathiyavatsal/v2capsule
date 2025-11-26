@@ -1,16 +1,28 @@
 # CineMax S3 Storage - Quick Start Guide
 
-## 🚀 One-Click Deployment
+## � Prerequisites
 
-### Windows
 ```bash
+# 1. Clone the repository
+git clone https://gitlab.com/username/cinemax-s3-storage.git
+cd cinemax-s3-storage
+
+# 2. Configure environment
+copy .env.example .env
+```
+
+## �🚀 One-Click Deployment
+
+### Option 1: Build from Source
+```bash
+# Windows
 deploy-complete.bat
 ```
 
-### Linux/Mac
+### Option 2: Use Pre-Built Images (Faster)
 ```bash
-chmod +x deploy-complete.sh
-./deploy-complete.sh
+# Windows
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## What It Does

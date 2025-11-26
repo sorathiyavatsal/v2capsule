@@ -4,14 +4,28 @@ A production-ready S3-compatible object storage system with advanced features in
 
 ## 🚀 Quick Start
 
-### One-Click Deployment
+### 1. Get the Code
+```bash
+git clone https://gitlab.com/username/cinemax-s3-storage.git
+cd cinemax-s3-storage
+```
+
+### 2. Configure Environment
+```bash
+copy .env.example .env
+# Edit .env with your secrets
+```
+
+### 3. Deploy
 ```bash
 # Windows
 .\scripts\deploy-complete.bat
+```
 
-# Linux/Mac
-chmod +x scripts/deploy-complete.sh
-./scripts/deploy-complete.sh
+### Option 2: Use Pre-Built Images (Faster)
+```bash
+# Windows
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ### Access

@@ -13,7 +13,10 @@ This guide explains how to deploy the entire CineMax S3 Storage system using Doc
 
 ### 1. Clone and Navigate
 ```bash
-cd "c:\Project\CineMaxPlaza\V2 Capsule"
+```bash
+git clone https://gitlab.com/username/cinemax-s3-storage.git
+cd cinemax-s3-storage
+```
 ```
 
 ### 2. Configure Environment
@@ -40,6 +43,16 @@ docker-compose logs -f
 
 # Check status
 docker-compose ps
+# Check status
+docker-compose ps
+```
+
+### 4. Alternative: Use Pre-Built Images
+If you don't want to build the images yourself, you can use our pre-built images from Docker Hub.
+
+```bash
+# Start using production compose file
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 That's it! The application will be available at:
