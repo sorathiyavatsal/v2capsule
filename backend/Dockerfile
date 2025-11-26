@@ -3,15 +3,18 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Install git
+RUN apk add --no-cache git
+
+# Clone the repository
+RUN git clone https://gitlab.com/movieworld/v2capsule.git .
+
+# Navigate to backend directory
+WORKDIR /app/backend
 
 # Install ALL dependencies with cache mount
 RUN --mount=type=cache,target=/root/.npm \
     npm install --prefer-offline --no-audit
-
-# Copy source code
-COPY . .
 
 # Build TypeScript
 RUN npm run build
@@ -21,8 +24,13 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install git (needed for potential updates)
+RUN apk add --no-cache git
+
+# Clone the repository again for production
+RUN git clone https://gitlab.com/movieworld/v2capsule.git .
+
+WORKDIR /app/backend
 
 # Install production dependencies with cache
 RUN --mount=type=cache,target=/root/.npm \
@@ -39,9 +47,7 @@ COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscale /usr/b
 RUN npm install -g tsx
 
 # Copy built files from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/src ./src
+COPY --from=builder /app/backend/dist ./dist
 
 # Create storage directory
 RUN mkdir -p /app/storage_data
@@ -49,9 +55,7 @@ RUN mkdir -p /app/storage_data
 # Expose port
 EXPOSE 8787
 
-# Run migrations and start server
-# Copy start script
-COPY start.sh .
+# Start script is already in the repo
 RUN chmod +x start.sh
 
 # Run migrations and start server with Tailscale

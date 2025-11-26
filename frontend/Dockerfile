@@ -3,19 +3,22 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Install git
+RUN apk add --no-cache git
+
+# Clone the repository
+RUN git clone https://gitlab.com/movieworld/v2capsule.git .
+
+# Navigate to frontend directory
+WORKDIR /app/frontend
+
 # Accept build arguments
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# Copy package files first for better caching
-COPY package*.json ./
-
 # Install dependencies with cache mount
 RUN --mount=type=cache,target=/root/.npm \
     npm install --prefer-offline --no-audit
-
-# Copy source code
-COPY . .
 
 # Build Next.js app
 RUN npm run build
@@ -25,8 +28,13 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install git
+RUN apk add --no-cache git
+
+# Clone the repository again for production
+RUN git clone https://gitlab.com/movieworld/v2capsule.git .
+
+WORKDIR /app/frontend
 
 # Install production dependencies with cache
 RUN --mount=type=cache,target=/root/.npm \
@@ -40,16 +48,14 @@ COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscaled /usr/
 COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscale /usr/bin/tailscale
 
 # Copy built files from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/frontend/.next ./.next
+COPY --from=builder /app/frontend/public ./public
+COPY --from=builder /app/frontend/next.config.ts ./
 
 # Expose port
 EXPOSE 3000
 
-# Start Next.js
-# Copy start script
-COPY start.sh .
+# Start script is already in the repo
 RUN chmod +x start.sh
 
 # Start application with Tailscale
