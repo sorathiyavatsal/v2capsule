@@ -20,6 +20,9 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN --mount=type=cache,target=/root/.npm \
     npm install --prefer-offline --no-audit
 
+# Ensure public directory exists for Next.js
+RUN mkdir -p ./public
+
 # Build Next.js app
 RUN npm run build
 
@@ -49,8 +52,11 @@ COPY --from=docker.io/tailscale/tailscale:latest /usr/local/bin/tailscale /usr/b
 
 # Copy built files from builder
 COPY --from=builder /app/frontend/.next ./.next
-COPY --from=builder /app/frontend/public ./public
 COPY --from=builder /app/frontend/next.config.ts ./
+COPY --from=builder /app/frontend/package.json ./
+
+# Ensure public directory exists (Next.js needs it)
+RUN mkdir -p ./public
 
 # Expose port
 EXPOSE 3000
