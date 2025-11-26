@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # Clone the repository
-RUN git clone https://gitlab.com/movieworld/v2capsule.git .
+RUN git clone https://github.com/sorathiyavatsal/v2capsule.git .
 
 # Navigate to backend directory
 WORKDIR /app/backend
@@ -28,7 +28,7 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # Clone the repository again for production
-RUN git clone https://gitlab.com/movieworld/v2capsule.git .
+RUN git clone https://github.com/sorathiyavatsal/v2capsule.git .
 
 WORKDIR /app/backend
 

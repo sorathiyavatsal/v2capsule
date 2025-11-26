@@ -6,7 +6,7 @@ A production-ready S3-compatible object storage system with advanced features in
 
 ### 1. Get the Code
 ```bash
-git clone https://gitlab.com/movieworld/v2capsule.git
+git clone https://github.com/sorathiyavatsal/v2capsule.git
 cd v2capsule
 ```
 

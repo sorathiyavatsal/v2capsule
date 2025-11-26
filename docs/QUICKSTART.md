@@ -4,7 +4,7 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://gitlab.com/movieworld/v2capsule.git
+git clone https://github.com/sorathiyavatsal/v2capsule.git
 cd v2capsule
 
 # 2. Configure environment
